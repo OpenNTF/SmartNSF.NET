@@ -6,3 +6,7 @@ SmartNSFxNET.Tests/obj/
 SmartNSFxNET/bin/
 
 SmartNSFxNET.Tests/bin/
+
+*.nupkg
+
+*.snupkg
