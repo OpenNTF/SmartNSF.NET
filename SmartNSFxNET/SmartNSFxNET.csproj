@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <PackageId>OpenNTF.SmartNSFxNET</PackageId>
-    <Version>0.1.0-rc</Version>
+    <Version>0.1.0-rc2</Version>
     <Authors>guedeWebGate</Authors>
     <Company>WebGate Consulting AG</Company>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
