@@ -15,16 +15,13 @@ using OpenNTF.SmartNSFxNET.Models;
 
 namespace OpenNTF.SmartNSFxNET
 {
-    public class Proxy
+    public class SessionAsSignerProxy
     {
-        private HttpClient _httpClient;
-        private IHttpCallCustomizer _customizer;
-
-        public Proxy(IHttpClientFactory httpClientFactory, IHttpCallCustomizer customizer)
+        private SmartNSFProxyClient _snsfpClient;
+        
+        public SessionAsSignerProxy(SmartNSFProxyClient client)
         {
-            this._customizer = customizer;
-            this._httpClient = httpClientFactory.CreateClient();
-            this._customizer.OnClientCreate(this._httpClient);
+            this._snsfpClient =client;
         }
         public async Task<IActionResult> MakeProxyCall(HttpRequest req, ILogger log)
         {
@@ -36,22 +33,22 @@ namespace OpenNTF.SmartNSFxNET
                 return new BadRequestObjectResult(new { error = "Need action parameter" });
             }
             HttpRequestMessage request = await BuildHttpRequestMessage(req, action);
-            this._customizer.BeforeHttpCall(request);
-            HttpResponseMessage responseMessage = await this._httpClient.SendAsync(request);
-            if (responseMessage.IsSuccessStatusCode)
-            {
-
-                string respString = await responseMessage.Content.ReadAsStringAsync();
-                dynamic respData = JsonConvert.DeserializeObject(respString);
-                return new OkObjectResult(respData);
-            }
-            else
-            {
+            try {
+                return new OkObjectResult( await this._snsfpClient.SendAsync<dynamic>(request, log));
+            } catch(SmartNSFProxyException e) {
                 return new BadRequestObjectResult(new
                 {
-                    error = "SmartNSF Call failed",
-                    errorCode = responseMessage.StatusCode,
-                    errorResaon = responseMessage.ReasonPhrase
+                    error = e.Message,
+                    errorCode = e.SmartNSFStatusCode,
+                    errorReason = e.SmartNSFError,
+                    errorTrace = e.SmartNSFTrace
+                });
+            }
+            catch(Exception e) {
+                return new BadRequestObjectResult(new
+                {
+                    error = e.Message,
+                    errorTrace = e.StackTrace
                 });
             }
         }
@@ -66,10 +63,8 @@ namespace OpenNTF.SmartNSFxNET
             }
 
             HttpRequestMessage request = await BuildHttpRequestMessageForBinaryCalls(req, action);
-            this._customizer.BeforeHttpCall(request);
-            HttpResponseMessage responseMessage = await this._httpClient.SendAsync(request);
-            if (responseMessage.IsSuccessStatusCode)
-            {
+            try{
+                HttpResponseMessage responseMessage = await this._snsfpClient.SendRecieveResponseAsync(request, log);
                 HttpResponseHeaders headers = responseMessage.Headers;
                 IEnumerable<string> values;
                 string contentType = "application/octet-stream";
@@ -81,14 +76,20 @@ namespace OpenNTF.SmartNSFxNET
                 log.LogInformation("Found: " + contentType);
                 byte[] resData = await responseMessage.Content.ReadAsByteArrayAsync();
                 return new FileContentResult(resData, contentType);
-            }
-            else
-            {
+            }catch(SmartNSFProxyException e) {
                 return new BadRequestObjectResult(new
                 {
-                    error = "SmartNSF Call failed",
-                    errorCode = responseMessage.StatusCode,
-                    errorResaon = responseMessage.ReasonPhrase
+                    error = e.Message,
+                    errorCode = e.SmartNSFStatusCode,
+                    errorReason = e.SmartNSFError,
+                    errorTrace = e.SmartNSFTrace
+                });
+            }
+            catch(Exception e) {
+                return new BadRequestObjectResult(new
+                {
+                    error = e.Message,
+                    errorTrace = e.StackTrace
                 });
             }
         }

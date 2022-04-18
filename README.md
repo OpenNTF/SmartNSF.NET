@@ -4,7 +4,7 @@
 
 ## Purpose
 
-.SmartNSF.Net provieds you a Proxy Service for .NET Core 3.1 Applications like Azure Functions. The main purpose is to encapsulate the call to the SmartNSF Backend as a Proxy. There are different authentication strategies how you can access SmartNSF Endpoints. SmartNSF.Net will provide you some helpfer classes to call the endpoints based on your choosen strategy.
+.SmartNSF.Net provieds you a Proxy Service for .NET Core 6.0 Applications like Azure Functions. The main purpose is to encapsulate the call to the SmartNSF Backend as a Proxy. There are different authentication strategies how you can access SmartNSF Endpoints. SmartNSF.Net will provide you some helpfer classes to call the endpoints based on your choosen strategy.
 
 ### Accessing the SmartNSF Endpoint with a defined header value as key
 
